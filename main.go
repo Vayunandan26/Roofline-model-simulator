@@ -68,3 +68,10 @@ func hardwareHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 }
+
+/* 
+more to be developed :
+1. Calculate handler function and helper functions inside it 
+2. reload handler 
+3. frontend 
+*/
