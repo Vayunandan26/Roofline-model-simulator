@@ -7,7 +7,7 @@ function val(id) {
 function sci(v,d=3) {
   if(!Number.isFinite(v))return '—';
   return new Intl.NumberFormat('en-US', {
-    notation:'compact',maximumFractionDigits:d
+    notation:'compact',maximumFgitractionDigits:d
   }
   ).format(v)
 }
