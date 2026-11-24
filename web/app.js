@@ -1,74 +1,74 @@
 const $ = (id) => document.getElementById(id);
 const fields = ['peak', 'bw', 'batch', 'dimD', 'dimF', 'aBytes', 'wBytes', 'oBytes'];
 let calculationNumber = 0;
-function val(id) {
-  return Number($(id).value)
-}
-function sci(v,d=3) {
-  if(!Number.isFinite(v))return '—';
-  return new Intl.NumberFormat('en-US', {
-    notation:'compact',maximumFgitractionDigits:d
+let rooflineCalculate;
+const profiles = {
+  v5e: {name:'TPU v5e · BF16', peak:1.97e14, bw:8.2e11},
+  h100: {name:'NVIDIA H100 · BF16', peak:9.89e14, bw:3.35e12},
+  v6e: {name:'TPU v6e · BF16', peak:9.1e14, bw:1.6e12}
+};
+const wasmReady = (async () => {
+  if (typeof Go === 'undefined') return false;
+  if (!('WebAssembly' in window)) throw new Error('This browser does not support WebAssembly');
+  const go = new Go();
+  const wasmURL = new URL('roofline.wasm', document.baseURI);
+  const response = await fetch(wasmURL);
+  if (!response.ok) throw new Error(`Unable to load WebAssembly module (${response.status})`);
+  const bytes = await response.arrayBuffer();
+  const {instance} = await WebAssembly.instantiate(bytes, go.importObject);
+  go.run(instance).catch(error => { $('error').textContent = `WebAssembly stopped: ${error.message}`; });
+  for (let i=0; i<200 && typeof window.rooflineCalculate !== 'function'; i++) {
+    await new Promise(resolve => setTimeout(resolve, 10));
   }
-  ).format(v)
-}
-function clearStats() {
+  if (typeof window.rooflineCalculate !== 'function') throw new Error('WebAssembly module did not initialize');
+  rooflineCalculate = window.rooflineCalculate;
+  return true;
+})();
+function val(id) { return Number($(id).value) }
+function clearResults() {
   calculationNumber++;
-  ['intensity','ridge','throughput'].forEach(x=>$(x).textContent='—');
-  $('regime').textContent='Waiting';
-  $('regimeHint').textContent='Add values to begin';
   $('formulas').innerHTML='<div class="empty">Enter positive values for hardware and matrix dimensions to see the worked calculation.</div>';
   resetChart()
 }
-async function preset(k) {
-  try {
-    const response=await fetch('/api/hardware/'+encodeURIComponent(k));
-    if(!response.ok)throw new Error('Unable to load hardware profile');
-    const p=await response.json();
-    $('hardware').value=k;
-    $('peak').value=p.peak;
-    $('bw').value=p.bw;
-    document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active',b.dataset.hw===k));
-    calculate()
-  }
-  catch(error) {
-    $('error').textContent=error.message
-  }
+function preset(k) {
+  const p=profiles[k];
+  if(!p) return;
+  $('hardware').value=k;
+  $('peak').value=p.peak;
+  $('bw').value=p.bw;
+  document.querySelectorAll('.preset').forEach(b=>b.classList.toggle('active',b.dataset.hw===k));
+  calculate()
 }
 async function calculate() {
-  const [peak,bw,B,D,F,a,w,o]=fields.map(val),inputs= {
-    peak,bw,B,D,F,a,w,o
-  }
-  ,requestNumber=++calculationNumber;
+  const [peak,bw,B,D,F,a,w,o]=fields.map(val), inputs={peak,bw,B,D,F,a,w,o}, requestNumber=++calculationNumber;
   if(Object.values(inputs).some(x=>!(x>0))) {
     $('error').textContent=Object.values(inputs).some(x=>x<0)?'Values must be positive.':'Fill in all fields to calculate; hardware presets fill peak and bandwidth.';
-    clearStats();
+    clearResults();
     return
   }
   $('error').textContent='';
   try {
-    const response=await fetch('/api/calculate', {
-      method:'POST',headers: {
-        'Content-Type':'application/json'
-      }
-      ,body:JSON.stringify(inputs)
-    }
-    );
-    if(!response.ok)throw new Error((await response.text()).trim());
-    const result=await response.json();
+    const useWasm = await wasmReady;
     if(requestNumber!==calculationNumber)return;
-    $('intensity').textContent=sci(result.intensity);
-    $('ridge').textContent=sci(result.ridge);
-    $('throughput').textContent=sci(result.rate)+' FLOP/s';
-    $('regime').textContent=result.regime;
-    $('regime').style.color=result.regime==='Compute-bound'?'var(--accent)':'var(--bluegray)';
-    $('regimeHint').textContent=result.regime==='Compute-bound'?'At the compute ceiling':'Limited by data movement';
+    let result;
+    if (useWasm) {
+      result=JSON.parse(rooflineCalculate(JSON.stringify(inputs)));
+    } else {
+      const response=await fetch('/api/calculate', {
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(inputs)
+      });
+      if(!response.ok)throw new Error((await response.text()).trim());
+      result=await response.json();
+    }
+    if(result.error)throw new Error(result.error);
+    if(requestNumber!==calculationNumber)return;
     $('formulas').innerHTML=result.formula_html;
     $('chart').outerHTML=result.plot_svg
   }
   catch(error) {
     if(requestNumber===calculationNumber) {
       $('error').textContent='Calculation failed: '+error.message;
-      clearStats()
+      clearResults()
     }
   }
 }
@@ -124,7 +124,7 @@ $('hardware').addEventListener('change',e=> {
   if(e.target.value!=='custom')preset(e.target.value);
   else {
     document.querySelectorAll('.preset').forEach(b=>b.classList.remove('active'));
-    clearStats()
+    clearResults()
   }
 }
 );
@@ -134,7 +134,7 @@ $('clear').addEventListener('click',()=> {
   $('hardware').value='custom';
   document.querySelectorAll('.preset').forEach(b=>b.classList.remove('active'));
   $('error').textContent='';
-  clearStats()
+  clearResults()
 }
 );
 fields.forEach(id=>$(id).addEventListener('input',()=> {

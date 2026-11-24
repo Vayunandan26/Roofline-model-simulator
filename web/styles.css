@@ -819,3 +819,172 @@ main {
 .regime-value {
   font: 600 15px 'DM Sans', sans-serif;
 }
+
+/* Two result panels above a full-width, horizontal input panel. */
+.workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.content {
+  order: 0;
+}
+
+.inputs {
+  order: 1;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 16px;
+}
+
+.panels-shell {
+  display: contents;
+}
+
+.switcher {
+  display: none;
+}
+
+.content .view,
+.content .view.active {
+  display: block;
+  min-width: 0;
+  height: 100%;
+  border: 2px solid #111;
+  background: #fff;
+  box-shadow: 6px 6px 0 #111;
+}
+
+.plotpanel,
+.formula-card {
+  height: 100%;
+  min-width: 0;
+}
+
+#chart {
+  min-height: 0;
+  aspect-ratio: 800 / 380;
+}
+
+.formula-row {
+  grid-template-columns: minmax(120px, .8fr) minmax(0, 1.2fr);
+}
+
+.content .footnote {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.inputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 0 22px;
+  min-width: 0;
+  padding: 22px;
+}
+
+.inputs .panelhead {
+  grid-column: 1 / -1;
+  margin-bottom: 12px;
+}
+
+.inputs .group {
+  min-width: 0;
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid #111;
+}
+
+.inputs .two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.inputs .field,
+.inputs .field input,
+.inputs .field select {
+  min-width: 0;
+}
+
+.inputs .field label {
+  gap: 6px;
+}
+
+.inputs .presets {
+  gap: 8px;
+}
+
+.inputs .actions,
+.inputs .invalid {
+  grid-column: 1 / -1;
+}
+
+.inputs .actions {
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.inputs .btn.primary {
+  flex: 0 1 190px;
+}
+
+.inputs .invalid {
+  min-height: 0;
+}
+
+@media (max-width: 1000px) {
+  .inputs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 18px;
+  }
+
+  .inputs .matmul-group,
+  .inputs .panelhead,
+  .inputs .actions,
+  .inputs .invalid {
+    grid-column: 1 / -1;
+  }
+
+  .inputs .matmul-group .two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .content {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+}
+
+@media (max-width: 600px) {
+  .workspace {
+    gap: 18px;
+  }
+
+  .inputs {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 17px;
+  }
+
+  .inputs .group,
+  .inputs .panelhead,
+  .inputs .actions,
+  .inputs .invalid {
+    grid-column: 1;
+  }
+
+  .inputs .matmul-group .two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .formula-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 5px;
+  }
+}
