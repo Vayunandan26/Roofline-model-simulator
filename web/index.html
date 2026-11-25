@@ -4,69 +4,62 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="#f3f0e8">
-    <title>
-      Roofline Studio
-    </title>
+    <title>Roofline Studio</title>
     <link rel="stylesheet" href="styles.css?v=2">
   </head>
   <body>
     <main>
+
+      <!-- ===== Hero ===== -->
       <div class="hero">
         <div>
-          <h1>
-            Roofline calculator
-          </h1>
-          <p>
-            Explore where your workload meets the limits of the hardware.
-          </p>
+          <h1>Roofline calculator</h1>
+          <p>Explore where your workload meets the limits of the hardware.</p>
         </div>
         <a class="ref" href="https://jax-ml.github.io/scaling-book/roofline/" target="_blank" rel="noreferrer">
           Based on All About Rooflines ↗
         </a>
       </div>
+
       <div class="workspace">
 
+        <!-- ===== Results area: combined chart/formula box + 4 stat boxes + footnote ===== -->
         <section class="content">
+
+          <!-- Combined box: Performance ceiling  <->  Formula substitution -->
           <div class="panels-shell">
+
+            <!-- View 1: Performance ceiling (chart) -->
             <div id="plotView" class="view active">
               <div class="plotpanel">
                 <div class="plothead">
                   <div>
-                    <h2>
-                      Performance ceiling
-                    </h2>
-                    <p>
-                      Throughput versus arithmetic intensity · log scale
-                    </p>
+                    <h2>Performance ceiling</h2>
+                    <p>Throughput versus arithmetic intensity · log scale</p>
                   </div>
                   <div class="legend">
-                    <span>
-                      <i class="dot">
-                      </i>
-                      Roofline
-                    </span>
-                    <span>
-                      <i class="dot workload">
-                      </i>
-                      Your workload
-                    </span>
+                    <span><i class="dot"></i>Roofline</span>
+                    <span><i class="dot workload"></i>Your workload</span>
                   </div>
+                  <button class="btn secondary toggle-view" data-view="formulaView" type="button">Show formulas</button>
                 </div>
-                <svg id="chart" viewBox="0 0 800 380" role="img" aria-label="Roofline chart">
-                </svg>
+                <svg id="chart" viewBox="0 0 800 380" role="img" aria-label="Roofline chart"></svg>
                 <p class="chart-tip">
                   The rising line is the bandwidth ceiling; the flat section is peak compute. Your workload marker appears when all values are entered.
                 </p>
               </div>
             </div>
+
+            <!-- View 2: Formula substitution -->
             <div id="formulaView" class="view">
               <div class="formula-card">
-                <h2>
-                  Formula substitution
-                </h2>
-                <p class="sub">
-                  The article’s matmul model with your current inputs substituted into each expression.
-                </p>
+                <div class="formula-head">
+                  <div>
+                    <h2>Formula substitution</h2>
+                    <p class="sub">The article’s matmul model with your current inputs substituted into each expression.</p>
+                  </div>
+                </div>
+                <button class="btn secondary toggle-view" data-view="plotView" type="button">Show chart</button>
                 <div id="formulas">
                   <div class="empty">
                     Enter positive values for hardware and matrix dimensions to see the worked calculation.
@@ -74,193 +67,121 @@
                 </div>
               </div>
             </div>
+
           </div>
+
+          <!-- Four stat boxes (stacked on the right by CSS) -->
           <div class="stats">
             <div class="panel stat">
-              <label>
-                ARITHMETIC INTENSITY
-              </label>
-              <strong id="intensity">
-                —
-              </strong>
-              <small>
-                FLOPs per byte
-              </small>
+              <label>ARITHMETIC INTENSITY</label>
+              <strong id="intensity">—</strong>
+              <small>FLOPs per byte</small>
             </div>
             <div class="panel stat">
-              <label>
-                HARDWARE RIDGE
-              </label>
-              <strong id="ridge">
-                —
-              </strong>
-              <small>
-                Peak compute ÷ bandwidth
-              </small>
+              <label>HARDWARE RIDGE</label>
+              <strong id="ridge">—</strong>
+              <small>Peak compute ÷ bandwidth</small>
             </div>
             <div class="panel stat">
-              <label>
-                ESTIMATED THROUGHPUT
-              </label>
-              <strong id="throughput">
-                —
-              </strong>
-              <small>
-                Roofline lower-bound rate
-              </small>
+              <label>ESTIMATED THROUGHPUT</label>
+              <strong id="throughput">—</strong>
+              <small>Roofline lower-bound rate</small>
             </div>
             <div class="panel stat highlight">
-              <label>
-                PERFORMANCE REGIME
-              </label>
-              <strong id="regime" class="regime-value">
-                Waiting
-              </strong>
-              <small id="regimeHint">
-                Add values to begin
-              </small>
+              <label>PERFORMANCE REGIME</label>
+              <strong id="regime" class="regime-value">Waiting</strong>
+              <small id="regimeHint">Add values to begin</small>
             </div>
           </div>
+
+          <!-- Footnote -->
           <p class="footnote">
             Model assumptions: matmul performs 2BDF FLOPs; bytes moved = aBD + wDF + oBF; estimated time is max(compute time, memory time). This is a lower-bound roofline estimate and assumes perfect overlap.
-            <a href="https://jax-ml.github.io/scaling-book/roofline/" target="_blank" rel="noreferrer">
-              Read the reference article
-            </a>.
+            <a href="https://jax-ml.github.io/scaling-book/roofline/" target="_blank" rel="noreferrer">Read the reference article</a>.
           </p>
+
         </section>
+
+        <!-- ===== Inputs: Workload & hardware ===== -->
         <aside class="panel inputs">
           <div class="panelhead">
             <h2>Workload &amp; hardware</h2>
-            <span class="chip">
-              EDIT INPUTS
-            </span>
+            <span class="chip">EDIT INPUTS</span>
           </div>
+
+          <!-- Hardware ceilings -->
           <div class="group hardware-group">
-            <div class="gtitle">
-              Hardware ceilings
-            </div>
+            <div class="gtitle">Hardware ceilings</div>
             <div class="field">
-              <label for="hardware">
-                Hardware profile
-              </label>
+              <label for="hardware">Hardware profile</label>
               <select id="hardware">
-                <option value="custom">
-                  Custom hardware
-                </option>
-                <option value="v5e">
-                  TPU v5e · BF16
-                </option>
-                <option value="h100">
-                  NVIDIA H100 · BF16
-                </option>
-                <option value="v6e">
-                  TPU v6e · BF16
-                </option>
+                <option value="custom">Custom hardware</option>
+                <option value="v5e">TPU v5e · BF16</option>
+                <option value="h100">NVIDIA H100 · BF16</option>
+                <option value="v6e">TPU v6e · BF16</option>
               </select>
             </div>
             <div class="two">
               <div class="field">
-                <label for="peak">
-                  Peak compute
-                  <span class="hint">
-                    FLOP/s
-                  </span>
-                </label>
+                <label for="peak">Peak compute <span class="hint">FLOP/s</span></label>
                 <input id="peak" type="number" min="0" step="any" placeholder="e.g. 1.97e14">
               </div>
               <div class="field">
-                <label for="bw">
-                  Memory bandwidth
-                  <span class="hint">
-                    B/s
-                  </span>
-                </label>
+                <label for="bw">Memory bandwidth <span class="hint">B/s</span></label>
                 <input id="bw" type="number" min="0" step="any" placeholder="e.g. 8.2e11">
               </div>
             </div>
           </div>
+
+          <!-- Matmul -->
           <div class="group matmul-group">
-            <div class="gtitle">
-              Matmul · X[B,D] × Y[D,F]
-            </div>
+            <div class="gtitle">Matmul · X[B,D] × Y[D,F]</div>
             <div class="two">
               <div class="field">
-                <label for="batch">
-                  Batch B
-                  <span class="hint">
-                    tokens
-                  </span>
-                </label>
+                <label for="batch">Batch B <span class="hint">tokens</span></label>
                 <input id="batch" type="number" min="0" step="any" placeholder="e.g. 128">
               </div>
               <div class="field">
-                <label for="dimD">
-                  Inner dim D
-                </label>
+                <label for="dimD">Inner dim D</label>
                 <input id="dimD" type="number" min="0" step="any" placeholder="e.g. 4096">
               </div>
             </div>
             <div class="field">
-              <label for="dimF">
-                Output dim F
-              </label>
+              <label for="dimF">Output dim F</label>
               <input id="dimF" type="number" min="0" step="any" placeholder="e.g. 4096">
             </div>
-            <div class="gtitle spaced-title">
-              Bytes per element
-            </div>
+          </div>
+
+          <!-- Bytes per element (own group, beside Matmul) -->
+          <div class="group bytes-group">
+            <div class="gtitle">Bytes per element</div>
             <div class="two">
               <div class="field">
-                <label for="aBytes">
-                  Activations a
-                </label>
+                <label for="aBytes">Activations a</label>
                 <input id="aBytes" type="number" min="0" step="any" placeholder="2">
               </div>
               <div class="field">
-                <label for="wBytes">
-                  Weights w
-                </label>
+                <label for="wBytes">Weights w</label>
                 <input id="wBytes" type="number" min="0" step="any" placeholder="2">
               </div>
             </div>
             <div class="field">
-              <label for="oBytes">
-                Output o
-              </label>
+              <label for="oBytes">Output o</label>
               <input id="oBytes" type="number" min="0" step="any" placeholder="2">
             </div>
           </div>
-          <div class="group preset-group">
-            <div class="gtitle">
-              Quick hardware presets
-            </div>
-            <div class="presets">
-              <button class="preset" data-hw="v5e">
-                TPU v5e
-              </button>
-              <button class="preset" data-hw="h100">
-                H100
-              </button>
-              <button class="preset" data-hw="v6e">
-                TPU v6e
-              </button>
-            </div>
-          </div>
+
+          <!-- Calculate / Clear -->
           <div class="actions">
-            <button class="btn primary" id="calculate">
-              Calculate
-            </button>
-            <button class="btn secondary" id="clear">
-              Clear
-            </button>
+            <button class="btn primary" id="calculate">Calculate</button>
+            <button class="btn secondary" id="clear">Clear</button>
           </div>
-          <div class="invalid" id="error">
-          </div>
+          <div class="invalid" id="error"></div>
         </aside>
+
       </div>
     </main>
     <!-- PAGES_WASM_RUNTIME -->
-    <script src="app.js?v=2" defer>
-    </script>
+    <script src="app.js?v=2" defer></script>
   </body>
 </html>

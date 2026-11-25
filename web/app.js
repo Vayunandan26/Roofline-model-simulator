@@ -119,6 +119,13 @@ document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=> {
   $(t.dataset.view).classList.add('active')
 }
 ));
+// NEW: switch between the chart box and the formula box
+document.querySelectorAll('.toggle-view').forEach(b=>b.addEventListener('click',()=> {
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  $(b.dataset.view).classList.add('active')
+}
+));
+
 document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>preset(b.dataset.hw)));
 $('hardware').addEventListener('change',e=> {
   if(e.target.value!=='custom')preset(e.target.value);
